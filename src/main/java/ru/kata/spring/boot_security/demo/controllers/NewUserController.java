@@ -5,11 +5,14 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.configs.repositories.RoleRepository;
+import ru.kata.spring.boot_security.demo.models.Role;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
 import java.security.Principal;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Controller
 public class NewUserController {
@@ -22,9 +25,20 @@ public class NewUserController {
         this.roleRepository = roleRepository;
     }
 
+    @GetMapping("/")
+    public String index(Model model) {
+        User user = new User();
+        user.setEmail("admin");
+        user.setPassword(BCrypt.hashpw("100", BCrypt.gensalt()));
+        user.setRoles(new HashSet<>(roleRepository.findAll()));
+        userService.saveUser(user);
+        return "redirect:/login";
+
+    }
+
     @GetMapping("/login")
     public String log(){
-        return "bootstrapTemplates/arc/sign_in";
+        return "bootstrapTemplates/sign_in";
     }
 
 
@@ -33,7 +47,7 @@ public class NewUserController {
         model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("user", userService.getUserByUsername(principal.getName()));
         model.addAttribute("roles", roleRepository.findAll());
-        return "bootstrapTemplates/adminpage";
+        return "bootstrapTemplates/adminpage2";
     }
 
     @GetMapping("admin/users/new")
@@ -56,6 +70,7 @@ public class NewUserController {
 
     @PostMapping("/admin/users/edit/{id}")
     public String updateUser(@PathVariable("id") long id, Model model,User user) {
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         userService.saveUser(user);
         return REDIRECT_USERS;
     }
