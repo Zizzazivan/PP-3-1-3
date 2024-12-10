@@ -17,10 +17,14 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "username", unique = true, nullable = false)
-    private String username;
-    private String password;
+    @Column(name = "firstname")
+    private String firstName;
+    @Column(name = "lastname")
+    private String lastName;
+    private int age;
+    @Column(unique = true, nullable = false)
     private String email;
+    private String password;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles", // Имя таблицы-связки
@@ -29,11 +33,17 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = new HashSet<>();
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getUsername() {
+        return this.getEmail();
     }
 
     @Override
