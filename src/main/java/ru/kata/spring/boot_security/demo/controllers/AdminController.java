@@ -1,44 +1,28 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
-
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.models.Role;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.stream.Collectors;
-
 @Controller
-public class NewUserController {
+public class AdminController {
+
+
     private static final String REDIRECT_USERS = "redirect:/admin";
     private final UserService userService;
     private final RoleRepository roleRepository;
 
-    public NewUserController(UserService userService, RoleRepository roleRepository) {
+    public AdminController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
         this.roleRepository = roleRepository;
-    }
-
-    @GetMapping("/")
-    public String index(Model model) {
-        User user = new User();
-        user.setEmail("admin");
-        user.setPassword(BCrypt.hashpw("100", BCrypt.gensalt()));
-        user.setRoles(new HashSet<>(roleRepository.findAll()));
-        userService.saveUser(user);
-        return "redirect:/login";
-
-    }
-
-    @GetMapping("/login")
-    public String log(){
-        return "bootstrapTemplates/sign_in";
     }
 
 
@@ -69,7 +53,7 @@ public class NewUserController {
 
 
     @PostMapping("/admin/users/edit/{id}")
-    public String updateUser(@PathVariable("id") long id, Model model,User user) {
+    public String updateUser(@PathVariable("id") long id, Model model, User user) {
         user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         userService.saveUser(user);
         return REDIRECT_USERS;
@@ -81,14 +65,6 @@ public class NewUserController {
         return REDIRECT_USERS;
     }
 
-
-
-
-    @GetMapping("/user")
-    public String user2(Model model, Principal principal) {
-        model.addAttribute("user", userService.getUserByUsername(principal.getName()));
-        return "bootstrapTemplates/user";
-    }
 
 
 }
